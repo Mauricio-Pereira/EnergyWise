@@ -1,4 +1,4 @@
-package com.fiap.EnergyWise.models;
+package com.FIAP.EnergyWise.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,23 +21,25 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "GS1_CONSUMO")
-public class Gs1Consumo {
+@Table(name = "GS1_COMUNIDADE_POPULACAO")
+public class ComunidadePopulacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_CONSUMO", nullable = false)
+    @Column(name = "ID_COMUNIDADE_POPULACAO", nullable = false)
     private Long id;
 
-    @Column(name = "DATA_CONSUMO")
-    private LocalDate dataConsumo;
+    @NotNull
+    @Column(name = "QTD_POPULACAO", nullable = false, precision = 12, scale = 2)
+    private BigDecimal qtdPopulacao;
 
-    @Column(name = "ENERGIA_CONSUMIDA", precision = 12, scale = 2)
-    private BigDecimal energiaConsumida;
+    @NotNull
+    @Column(name = "DATA_MARCACAO", nullable = false)
+    private LocalDate dataMarcacao;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
     @JoinColumn(name = "ID_COMUNIDADE", nullable = false)
-    private Gs1Comunidade idComunidade;
+    private Comunidade idComunidade;
 
 }

@@ -1,4 +1,4 @@
-package com.fiap.EnergyWise.models;
+package com.FIAP.EnergyWise.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,25 +15,29 @@ import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "GS1_CONDICOES_CLIMATICAS")
-public class Gs1CondicoesClimatica {
+@Table(name = "GS1_ENERGIA_GERADA")
+public class EnergiaGerada {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_CONDICOES_CLIMATICAS", nullable = false)
-    private Integer id;
+    @Column(name = "ID_ENERGIA_GERADA", nullable = false)
+    private Long id;
 
     @Column(name = "DATA_MEDICAO")
     private LocalDate dataMedicao;
+
+    @Column(name = "ENERGIA_SOLAR_GERADA", precision = 12, scale = 2)
+    private BigDecimal energiaSolarGerada;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
     @JoinColumn(name = "ID_COMUNIDADE", nullable = false)
-    private Gs1Comunidade idComunidade;
+    private Comunidade idComunidade;
 
 }

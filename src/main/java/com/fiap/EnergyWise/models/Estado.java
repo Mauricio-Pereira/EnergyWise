@@ -1,4 +1,4 @@
-package com.fiap.EnergyWise.models;
+package com.FIAP.EnergyWise.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,12 +14,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "GS1_REGIAO")
-public class Gs1Regiao {
+@Table(name = "GS1_ESTADO")
+public class Estado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_REGIAO", nullable = false)
-    private Integer id;
+    @Column(name = "ID_ESTADO", nullable = false)
+    private Long id;
 
     @Size(max = 50)
     @NotNull

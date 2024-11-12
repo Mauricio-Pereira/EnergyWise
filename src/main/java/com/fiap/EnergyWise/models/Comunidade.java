@@ -1,4 +1,4 @@
-package com.fiap.EnergyWise.models;
+package com.FIAP.EnergyWise.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,37 +10,40 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "GS1_ENERGIA_GERADA")
-public class Gs1EnergiaGerada {
+@Table(name = "GS1_COMUNIDADE")
+public class Comunidade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_ENERGIA_GERADA", nullable = false)
-    private Integer id;
+    @Column(name = "ID_COMUNIDADE", nullable = false)
+    private Long id;
 
-    @Column(name = "DATA_MEDICAO")
-    private LocalDate dataMedicao;
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "NOME", nullable = false, length = 100)
+    private String nome;
 
-    @Column(name = "ENERGIA_SOLAR_GERADA", precision = 12, scale = 2)
-    private BigDecimal energiaSolarGerada;
+    @NotNull
+    @Column(name = "NUM_POPULACAO", nullable = false)
+    private int numPopulacao;
 
-    @Column(name = "ENERGIA_EOLICA_GERADA", precision = 12, scale = 2)
-    private BigDecimal energiaEolicaGerada;
+    @Column(name = "DATA_CADASTRO")
+    private LocalDate dataCadastro = LocalDate.now();
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
-    @JoinColumn(name = "ID_COMUNIDADE", nullable = false)
-    private Gs1Comunidade idComunidade;
+    @JoinColumn(name = "ID_CIDADE", nullable = false)
+    private Cidade idCidade;
 
 }

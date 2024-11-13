@@ -16,6 +16,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Getter
@@ -29,7 +30,7 @@ public class Consumo {
     private Long id;
 
     @Column(name = "DATA_CONSUMO")
-    private LocalDate dataConsumo;
+    private Timestamp dataConsumo;
 
     @Column(name = "ENERGIA_CONSUMIDA", precision = 12, scale = 2)
     private BigDecimal energiaConsumida;
@@ -38,6 +39,6 @@ public class Consumo {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
     @JoinColumn(name = "ID_COMUNIDADE", nullable = false)
-    private Comunidade idComunidade;
+    private Comunidade comunidade;
 
 }

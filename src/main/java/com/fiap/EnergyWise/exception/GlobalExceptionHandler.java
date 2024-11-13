@@ -1,24 +1,37 @@
 package com.FIAP.EnergyWise.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Date;
+import java.time.LocalDate;
 
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler {
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-//        Map<String, String> errors = new HashMap<>();
-//        ex.getBindingResult().getFieldErrors().forEach(error -> {
-//            errors.put(error.getField(), error.getDefaultMessage());
-//        });
-//        return ResponseEntity.badRequest().body(errors);
-//    }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorDetail> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        ErrorDetail
+                erro = new ErrorDetail(Date.valueOf(LocalDate.now()), ex.getMessage(), HttpStatus.NOT_FOUND.value());
+        return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorDetail> handleBadRequestException(BadRequestException ex) {
+        ErrorDetail
+                erro = new ErrorDetail(Date.valueOf(LocalDate.now()), ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorDetail> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorDetail
+                erro = new ErrorDetail(Date.valueOf(LocalDate.now()), ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+    }
+
 
 }
+

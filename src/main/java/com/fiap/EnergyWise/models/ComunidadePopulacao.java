@@ -1,5 +1,6 @@
 package com.FIAP.EnergyWise.models;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,6 +17,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Getter
@@ -34,12 +36,12 @@ public class ComunidadePopulacao {
 
     @NotNull
     @Column(name = "DATA_MARCACAO", nullable = false)
-    private LocalDate dataMarcacao;
+    private Timestamp dataMarcacao;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.RESTRICT)
-    @JoinColumn(name = "ID_COMUNIDADE", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "ID_COMUNIDADE", nullable = false )
     private Comunidade idComunidade;
 
 }

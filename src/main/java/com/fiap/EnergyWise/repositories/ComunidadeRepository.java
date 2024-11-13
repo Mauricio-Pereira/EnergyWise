@@ -10,4 +10,6 @@ public interface ComunidadeRepository extends JpaRepository<Comunidade, Long>
 {
     @Procedure(procedureName = "INSERIR_COMUNIDADE")
     int inserirComunidade(String nome, int qtdMoradores, long idCidade, LocalDate dataCadastro);
+
+
 }

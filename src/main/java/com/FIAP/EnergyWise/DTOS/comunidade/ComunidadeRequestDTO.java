@@ -1,17 +1,13 @@
-package com.FIAP.EnergyWise.DTOS;
+package com.FIAP.EnergyWise.DTOS.comunidade;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter
-public class ComunidadeRequestCreateDTO {
+public class ComunidadeRequestDTO {
     @NotNull
     private String nome;
     @NotNull

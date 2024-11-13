@@ -1,5 +1,6 @@
 package com.FIAP.EnergyWise.models;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,6 +45,6 @@ public class Comunidade {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
     @JoinColumn(name = "ID_CIDADE", nullable = false)
-    private Cidade idCidade;
+    private Cidade cidade;
 
 }

@@ -18,10 +18,10 @@ public class OpenApiConfig {
                         .version("v1.0")
                         .contact(new Contact()
                                 .name("Maurício Pereira")
-                                .email("mauricio.pereira@fiap.com.br")
-                                .url("https://www.linkedin.com/in/mauriciopereira6503")))
+                                .email("mauricio.pvieira1@gmail.com")
+                                .url("https://www.linkedin.com/in/mauriciovpereira/")))
                 .externalDocs(new ExternalDocumentation()
                         .description("Repositório no GitHub")
-                        .url("https://github.com/seu-repositorio/energywise"));
+                        .url("https://github.com/Mauricio-Pereira/EnergyWise"));
     }
 }

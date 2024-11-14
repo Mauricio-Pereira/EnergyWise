@@ -5,15 +5,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ComunidadeResponseDTO
 {
-    Long id;
-    String nome;
-    Integer numPopulacao;
-    String nomeCidade;
-    String dataCadastro;
+    private Long id;
+    private String nome;
+    private Integer numPopulacao;
+    private String nomeCidade;
+    private Timestamp dataCadastro;
 }

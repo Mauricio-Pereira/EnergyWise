@@ -17,7 +17,9 @@ import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -39,11 +41,11 @@ public class Comunidade {
     private int numPopulacao;
 
     @Column(name = "DATA_CADASTRO")
-    private LocalDate dataCadastro = LocalDate.now();
+    private Timestamp dataCadastro =
+            Timestamp.valueOf(LocalDateTime.now());
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.RESTRICT)
     @JoinColumn(name = "ID_CIDADE", nullable = false)
     private Cidade cidade;
 

@@ -1,10 +1,18 @@
 package com.FIAP.EnergyWise.services;
 
+import com.FIAP.EnergyWise.DTOS.tipoPlacaSolar.TipoPlacaSolarRequestDTO;
+import com.FIAP.EnergyWise.DTOS.tipoPlacaSolar.TipoPlacaSolarResponseDTO;
 import com.FIAP.EnergyWise.exception.ResourceNotFoundException;
 import com.FIAP.EnergyWise.models.TipoPlacaSolar;
 import com.FIAP.EnergyWise.repositories.TipoPlacaSolarRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,47 +23,66 @@ public class TipoPlacaSolarService {
     @Autowired
     private TipoPlacaSolarRepository tipoPlacaSolarRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @Transactional
+    public TipoPlacaSolarResponseDTO inserirTipoPlacaSolar(
+            TipoPlacaSolarRequestDTO requestDTO) {
+        try {
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("INSERIR_TIPO_PLACA_SOLAR");
+
+            // Registrar os parâmetros
+            query.registerStoredProcedureParameter("p_nome", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_potencia_watt", BigDecimal.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_preco_unitario", BigDecimal.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_id_tipo_placa", Long.class, ParameterMode.OUT);
+
+            // Definir os valores
+            query.setParameter("p_nome", requestDTO.getNome());
+            query.setParameter("p_potencia_watt", requestDTO.getPotenciaWatt());
+            query.setParameter("p_preco_unitario", requestDTO.getPrecoUnitario());
+
+            // Executar a procedure
+            query.execute();
+
+            // Obter o ID gerado
+            Long idTipoPlaca = ((Number) query.getOutputParameterValue("p_id_tipo_placa")).longValue();
+
+            // Construir o DTO de resposta
+            TipoPlacaSolarResponseDTO responseDTO = new TipoPlacaSolarResponseDTO();
+            responseDTO.setId(idTipoPlaca);
+            responseDTO.setNome(requestDTO.getNome());
+            responseDTO.setPotenciaWatt(requestDTO.getPotenciaWatt());
+            responseDTO.setPrecoUnitario(requestDTO.getPrecoUnitario());
+
+            return responseDTO;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao inserir tipo de placa solar: " + e.getMessage(), e);
+        }
+    }
+
 
     public List<TipoPlacaSolar> findAllPlacasSolares() {
-        List<TipoPlacaSolar> tipoPlacaSolares = tipoPlacaSolarRepository.findAll();
+        List<TipoPlacaSolar> tipoPlacaSolares = tipoPlacaSolarRepository.findAll(
+                Sort.by(Sort.Direction.ASC, "id"));
         if (tipoPlacaSolares.isEmpty()) {
             new ResourceNotFoundException("Nenhum tipo de placa solar encontrado");
         }
         return tipoPlacaSolares;
     }
 
-    public TipoPlacaSolar findById(Long id) {
+    public TipoPlacaSolarResponseDTO findById(Long id) {
         TipoPlacaSolar tipoPlacaSolar = tipoPlacaSolarRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de placa solar não encontrado"));
-        return tipoPlacaSolar;
+        TipoPlacaSolarResponseDTO responseDTO = modelMapper.map(tipoPlacaSolar, TipoPlacaSolarResponseDTO.class);
+        return responseDTO;
     }
 
-    public void inicializarTiposPlacaSolar() {
-        if(tipoPlacaSolarRepository.findByNome("Placa 340W").isEmpty()) {
-            TipoPlacaSolar placa340W = new TipoPlacaSolar();
-            placa340W.setNome("Placa 340W");
-            placa340W.setPotenciaWatt(BigDecimal.valueOf(340.00));
-            placa340W.setPrecoUnitario(BigDecimal.valueOf(689.45));
-            tipoPlacaSolarRepository.save(placa340W);
-        }
-
-        if(tipoPlacaSolarRepository.findByNome("Placa 400W").isEmpty()) {
-            TipoPlacaSolar placa400W = new TipoPlacaSolar();
-            placa400W.setNome("Placa 400W");
-            placa400W.setPotenciaWatt(BigDecimal.valueOf(400.00));
-            placa400W.setPrecoUnitario(BigDecimal.valueOf(946.86));
-            tipoPlacaSolarRepository.save(placa400W);
-        }
-
-        if(tipoPlacaSolarRepository.findByNome("Placa 500W").isEmpty()) {
-            TipoPlacaSolar placa450W = new TipoPlacaSolar();
-            placa450W.setNome("Placa 500W");
-            placa450W.setPotenciaWatt(BigDecimal.valueOf(500.00));
-            placa450W.setPrecoUnitario(BigDecimal.valueOf(1345.25));
-            tipoPlacaSolarRepository.save(placa450W);
-        }
 
 
-
-    }
 }

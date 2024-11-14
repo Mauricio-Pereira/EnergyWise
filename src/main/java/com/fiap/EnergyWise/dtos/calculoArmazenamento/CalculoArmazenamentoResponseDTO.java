@@ -2,6 +2,7 @@ package com.FIAP.EnergyWise.DTOS.calculoArmazenamento;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.hateoas.Link;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

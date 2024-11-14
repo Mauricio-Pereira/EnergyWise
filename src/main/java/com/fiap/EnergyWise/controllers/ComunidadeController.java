@@ -3,13 +3,18 @@ package com.FIAP.EnergyWise.controllers;
 import com.FIAP.EnergyWise.DTOS.comunidade.ComunidadeRequestDTO;
 import com.FIAP.EnergyWise.DTOS.comunidade.ComunidadeRequestUpdateDTO;
 import com.FIAP.EnergyWise.DTOS.comunidade.ComunidadeResponseDTO;
-import com.FIAP.EnergyWise.models.Comunidade;
 import com.FIAP.EnergyWise.services.ComunidadeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/comunidade")
 @Tag(name = "Comunidade", description = "API de comunidades")
@@ -32,6 +41,10 @@ public class ComunidadeController {
     @Autowired
     private ComunidadeService comunidadeService;
 
+    @Autowired
+    private PagedResourcesAssembler<ComunidadeResponseDTO> pagedResourcesAssembler;
+
+
 
     @Operation(summary = "Cria uma comunidade")
     @ApiResponses(value = {
@@ -39,9 +52,9 @@ public class ComunidadeController {
             @ApiResponse(responseCode = "400", description = "Erro na requisição")
     })
     @PostMapping
-    public ResponseEntity<Comunidade> createComunidade(@RequestBody
+    public ResponseEntity<ComunidadeResponseDTO> createComunidade(@RequestBody
                                                        ComunidadeRequestDTO comunidadeRequestDTO) {
-        Comunidade comunidade = comunidadeService.createComunidade(
+        ComunidadeResponseDTO comunidade = comunidadeService.createComunidade(
                 comunidadeRequestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(comunidade);
@@ -53,10 +66,18 @@ public class ComunidadeController {
             @ApiResponse(responseCode = "404", description = "Comunidades não encontradas")
     })
     @GetMapping
-    public ResponseEntity<List<ComunidadeResponseDTO>> findAllComunidades() {
-        List<ComunidadeResponseDTO> comunidades = comunidadeService.findAllComunidades();
-        return ResponseEntity.status(HttpStatus.OK).body(comunidades);
+    public ResponseEntity<PagedModel<EntityModel<ComunidadeResponseDTO>>> findAllComunidades(
+            @ParameterObject Pageable pageable) {
+
+        Page<ComunidadeResponseDTO> comunidadesPage = comunidadeService.findAllComunidades(pageable);
+
+        PagedModel<EntityModel<ComunidadeResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(comunidadesPage,
+                comunidade -> EntityModel.of(comunidade,
+                        linkTo(methodOn(ComunidadeController.class).findComunidadeById(comunidade.getId())).withSelfRel()));
+
+        return ResponseEntity.ok(pagedModel);
     }
+
 
     @Operation(summary = "Busca uma comunidade por ID")
     @ApiResponses(value = {
@@ -64,10 +85,13 @@ public class ComunidadeController {
             @ApiResponse(responseCode = "404", description = "Comunidade não encontrada")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ComunidadeResponseDTO> findComunidadeById(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<ComunidadeResponseDTO>> findComunidadeById(@PathVariable Long id) {
         ComunidadeResponseDTO comunidade = comunidadeService.findById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(comunidade);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(EntityModel.of(comunidade, linkTo(methodOn(ComunidadeController.class)
+                .findComunidadeById(id)).withSelfRel()));
     }
+
 
     @Operation(summary = "Atualiza uma comunidade")
     @ApiResponses(value = {

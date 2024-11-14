@@ -1,21 +1,25 @@
 package com.FIAP.EnergyWise.services;
+
 import com.FIAP.EnergyWise.DTOS.comunidade.ComunidadeRequestDTO;
 import com.FIAP.EnergyWise.DTOS.comunidade.ComunidadeRequestUpdateDTO;
 import com.FIAP.EnergyWise.DTOS.comunidade.ComunidadeResponseDTO;
 import com.FIAP.EnergyWise.exception.ResourceNotFoundException;
+import com.FIAP.EnergyWise.models.Cidade;
 import com.FIAP.EnergyWise.models.Comunidade;
-import com.FIAP.EnergyWise.repositories.CalculoArmazenamentoRepository;
 import com.FIAP.EnergyWise.repositories.CidadeRepository;
-import com.FIAP.EnergyWise.repositories.ComunidadePopulacaoRepository;
 import com.FIAP.EnergyWise.repositories.ComunidadeRepository;
-import com.FIAP.EnergyWise.repositories.ConsumoRepository;
-import com.FIAP.EnergyWise.repositories.TipoPlacaSolarRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,67 +37,75 @@ public class ComunidadeService {
     private CidadeRepository cidadeRepository;
 
     @Autowired
-    private ComunidadePopulacaoRepository comuPopulacaoRepository;
+    private EntityManager entityManager;
 
-    @Autowired
-    private ConsumoRepository consumoRepository;
+    public ComunidadeResponseDTO createComunidade(ComunidadeRequestDTO comunidadeRequestDTO) {
 
-    @Autowired
-    private TipoPlacaSolarRepository tipoPlacaSolarRepository;
-
-    @Autowired
-    private CalculoArmazenamentoRepository calculoArmazenamentoRepository;
-
-    private static final BigDecimal CONSUMO_MEDIO_PESSOA_KWH =
-            BigDecimal.valueOf(170);
-
-
-    public Comunidade createComunidade(ComunidadeRequestDTO comunidadeRequestDTO) {
-
+        // Validar se a população é maior que zero
         if (comunidadeRequestDTO.getNumPopulacao() <= 0) {
             throw new ResourceNotFoundException("A comunidade deve ter pelo menos uma pessoa");
         }
 
-
-        Comunidade comunidade =
-                modelMapper.map(comunidadeRequestDTO, Comunidade.class);
-        comunidade.setCidade(cidadeRepository.findCidadeByNome(
-                comunidadeRequestDTO.getNomeCidade().toUpperCase())
+        // Obter a cidade
+        Cidade cidade = cidadeRepository.findCidadeByNome(
+                        comunidadeRequestDTO.getNomeCidade().toUpperCase())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Cidade não encontrada. " +
-                                "A cidade não está cadastrada ou o nome da cidade está incorreto" +
-                                "Por favor, verifique o nome da cidade, incluindo acentos e caracteres especiais.")));
+                                "A cidade não está cadastrada ou o nome da cidade está incorreto. " +
+                                "Por favor, verifique o nome da cidade, incluindo acentos e caracteres especiais."));
 
-        int idComunidadeCadastrada =
-                comunidadeRepository.inserirComunidade(comunidade.getNome(),
-                        comunidade.getNumPopulacao(),
-                        comunidade.getCidade().getId(),
-                        LocalDate.now());
+        try {
+            // Chamar a procedure INSERIR_COMUNIDADE usando EntityManager
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("INSERIR_COMUNIDADE");
 
-        Comunidade comunidadeCadastrada =
-                comunidadeRepository.findById((long) idComunidadeCadastrada).get();
+            // Registrar os parâmetros de entrada e saída
+            query.registerStoredProcedureParameter("p_nome", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_num_populacao", Long.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_id_cidade", Long.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_data_cadastro", Timestamp.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("p_id_comunidade", Long.class, ParameterMode.OUT);
 
-        return comunidadeCadastrada;
+            // Definir os valores dos parâmetros de entrada
+            query.setParameter("p_nome", comunidadeRequestDTO.getNome());
+            query.setParameter("p_num_populacao", comunidadeRequestDTO.getNumPopulacao());
+            query.setParameter("p_id_cidade", cidade.getId());
+            query.setParameter("p_data_cadastro", Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+
+            // Executar a procedure
+            query.execute();
+
+            // Obter o ID gerado
+            Long idComunidade = ((Number) query.getOutputParameterValue("p_id_comunidade")).longValue();
+
+            // Obter a comunidade inserida (opcional, se quiser retornar todos os dados)
+            Comunidade comunidadeInserida = entityManager.find(Comunidade.class, idComunidade);
+
+            // Mapear a comunidade inserida para o DTO de resposta
+            ComunidadeResponseDTO comunidadeResponseDTO = modelMapper.map(comunidadeInserida, ComunidadeResponseDTO.class);
+
+            return comunidadeResponseDTO;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao inserir comunidade: " + e.getMessage(), e);
+        }
     }
 
-    public List<ComunidadeResponseDTO> findAllComunidades() {
+    public Page<ComunidadeResponseDTO> findAllComunidades(Pageable pageable) {
 
-        List<Comunidade> comunidades = comunidadeRepository.findAll();
+        Page<Comunidade> comunidadesPage = comunidadeRepository.findAll(pageable);
 
-        if (comunidades.isEmpty() ) {
+        if (comunidadesPage.isEmpty()) {
             throw new ResourceNotFoundException("Nenhuma comunidade cadastrada");
         }
 
-        List<ComunidadeResponseDTO> comunidadesResponse =
-                comunidades.stream().map(comunidade -> {
-                    ComunidadeResponseDTO dto = modelMapper.map(comunidade,
-                            ComunidadeResponseDTO.class);
-                    dto.setNomeCidade(comunidade.getCidade()
-                            .getNome()); // Definindo apenas o nome da cidade
-                    return dto;
-                }).collect(Collectors.toList());
+        // Mapeia diretamente cada entidade para DTO dentro do Page
+        Page<ComunidadeResponseDTO> comunidadesResponsePage = comunidadesPage.map(comunidade -> {
+            ComunidadeResponseDTO dto = modelMapper.map(comunidade, ComunidadeResponseDTO.class);
+            dto.setNomeCidade(comunidade.getCidade().getNome()); // Definindo apenas o nome da cidade
+            return dto;
+        });
 
-        return comunidadesResponse;
+        return comunidadesResponsePage;
     }
 
     public ComunidadeResponseDTO findById(Long id) {

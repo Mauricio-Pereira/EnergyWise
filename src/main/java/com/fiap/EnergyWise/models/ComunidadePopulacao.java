@@ -31,8 +31,8 @@ public class ComunidadePopulacao {
     private Long id;
 
     @NotNull
-    @Column(name = "QTD_POPULACAO", nullable = false, precision = 12, scale = 2)
-    private BigDecimal qtdPopulacao;
+    @Column(name = "QTD_POPULACAO", nullable = false, precision = 12)
+    private int qtdPopulacao;
 
     @NotNull
     @Column(name = "DATA_MARCACAO", nullable = false)

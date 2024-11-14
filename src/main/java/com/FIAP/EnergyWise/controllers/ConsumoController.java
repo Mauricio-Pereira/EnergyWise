@@ -8,14 +8,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/consumo")
@@ -46,12 +52,14 @@ public class ConsumoController {
             @ApiResponse(responseCode = "404", description = "Consumos não encontrados")
     })
     @GetMapping
-    public ResponseEntity<List<ConsumoResponseDTO>> findAllConsumos() {
+    public ResponseEntity<List<EntityModel<ConsumoResponseDTO>>> findAllConsumos() {
         List<ConsumoResponseDTO> consumos = consumoService.findAllConsumos();
         if (consumos.isEmpty()) {
             return ResponseEntity.status(404).build();
         }
-        return ResponseEntity.ok(consumos);
+        return ResponseEntity.status(HttpStatus.OK).body(consumos.stream()
+                .map(consumo -> EntityModel.of(consumo, linkTo(methodOn(ConsumoController.class)
+                        .findConsumoByComunidade(consumo.getId())).withSelfRel())).toList());
     }
 
     @Operation(summary = "Busca os consumos de uma comunidade")
@@ -60,12 +68,14 @@ public class ConsumoController {
             @ApiResponse(responseCode = "404", description = "Consumo não encontrado")
     })
     @GetMapping("/{idComunidade}")
-    public ResponseEntity<List<ConsumoResponseDTO>> findConsumoByComunidade(Long idComunidade) {
+    public ResponseEntity<List<EntityModel<ConsumoResponseDTO>>> findConsumoByComunidade(@PathVariable Long idComunidade) {
         List<ConsumoResponseDTO> consumos = consumoService.findConsumoByComunidade(idComunidade);
         if (consumos.isEmpty()) {
             return ResponseEntity.status(404).build();
         }
-        return ResponseEntity.ok(consumos);
+        return ResponseEntity.status(HttpStatus.OK).body(consumos.stream()
+                .map(consumo -> EntityModel.of(consumo, linkTo(methodOn(ConsumoController.class)
+                        .findConsumoByComunidade(idComunidade)).withSelfRel())).toList());
     }
 
 

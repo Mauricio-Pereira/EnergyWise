@@ -6,7 +6,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/calculoArmazenamento")
 @Tag(name = "CalculoArmazenamento", description = "API de cálculo de armazenamento, numero de placas solares e valor de placas solares")
@@ -24,6 +30,9 @@ public class CalculoArmazenamentoController {
 
     @Autowired
     private CalculoArmazenamentoService calculoArmazenamentoService;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
 
 
@@ -39,14 +48,18 @@ public class CalculoArmazenamentoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(calculo);
     }
 
+
     @Operation(summary = "Mostra todos os cálculos de armazenamento realizados em uma comunidade.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cálculos encontrados"),
             @ApiResponse(responseCode = "404", description = "Cálculos não encontrados")
     })
     @GetMapping("/{idComunidade}")
-    public ResponseEntity<List<CalculoArmazenamentoResponseDTO>> findCalculoByComunidade(@PathVariable Long idComunidade) {
+    public ResponseEntity<List<EntityModel<CalculoArmazenamentoResponseDTO>>> findCalculoByComunidade(@PathVariable Long idComunidade) {
         List<CalculoArmazenamentoResponseDTO> calculo = calculoArmazenamentoService.findAllCalculosByComunidade(idComunidade);
-        return ResponseEntity.status(HttpStatus.OK).body(calculo);
+        return ResponseEntity.status(HttpStatus.OK).body(calculo.stream()
+                .map(c -> modelMapper.map(c, CalculoArmazenamentoResponseDTO.class))
+                .map(c -> EntityModel.of(c, WebMvcLinkBuilder.linkTo(methodOn(CalculoArmazenamentoController.class).findCalculoByComunidade(idComunidade)).withSelfRel()))
+                .collect(toList()));
     }
 }

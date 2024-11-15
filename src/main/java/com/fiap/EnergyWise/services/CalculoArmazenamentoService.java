@@ -16,6 +16,9 @@ import jakarta.persistence.PersistenceException;
 import jakarta.persistence.StoredProcedureQuery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +52,8 @@ public class CalculoArmazenamentoService {
     @Transactional
     public CalculoArmazenamentoResponseDTO calcularPlacasNecessarias(Long comunidadeId, Long tipoPlacaId) {
         // Verificar se existem consumos para a comunidade
-        consumoRepository.findConsumoByComunidadeId(comunidadeId)
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "dataConsumo"));
+        consumoRepository.findConsumoByComunidadeId(comunidadeId,pageable)
                 .orElseThrow(() -> new ResourceNotFoundException("Consumos não encontrados para a comunidade."));
 
         try {
@@ -115,26 +119,38 @@ public class CalculoArmazenamentoService {
 
 
 
-    public List<CalculoArmazenamentoResponseDTO> findAllCalculosByComunidade(Long comunidadeId) {
+    public Page<CalculoArmazenamentoResponseDTO> findAllCalculosByComunidade(Long comunidadeId, int page, int size) {
         Comunidade comunidade =
                 comunidadeRepository.findById(comunidadeId).orElseThrow(() -> new ResourceNotFoundException(
                         "Comunidade não encontrada."));
 
+        Pageable pageable = PageRequest.of(page-1, size, Sort.by(Sort.Direction.DESC, "dataCalculo"));
 
-        List<CalculoArmazenamento> calculos =
-                calculoArmazenamentoRepository.findCalculoArmazenamentoByComunidadeId(
-                                comunidadeId, Sort.by(Sort.Direction.DESC, "dataCalculo"))
-                        .orElseThrow(() -> new ResourceNotFoundException("Cálculos não encontrados para a comunidade."));
+        Page<CalculoArmazenamento> calculosPage = calculoArmazenamentoRepository.findCalculoArmazenamentoByComunidadeId(comunidadeId, pageable)
+                .orElseThrow(() -> new ResourceNotFoundException("Cálculos não encontrados para a comunidade."));
 
 
-        List<CalculoArmazenamentoResponseDTO> dtos = calculos.stream().map(c -> {
-            CalculoArmazenamentoResponseDTO dto =
-                    modelMapper.map(c, CalculoArmazenamentoResponseDTO.class);
-            dto.setComunidade(c.getComunidade().getNome());
-            dto.setTipoPlacaSolar(c.getTipoPlacaSolar().getNome());
+        // Mapeia cada entidade para DTO dentro do Page
+        Page<CalculoArmazenamentoResponseDTO> dtosPage = calculosPage.map(calculo -> {
+            CalculoArmazenamentoResponseDTO dto = modelMapper.map(calculo, CalculoArmazenamentoResponseDTO.class);
+            dto.setComunidade(calculo.getComunidade().getNome());
+            dto.setTipoPlacaSolar(calculo.getTipoPlacaSolar().getNome());
             return dto;
-        }).collect(toList());
+        });
 
-        return dtos;
+        return dtosPage;
+    }
+
+    public CalculoArmazenamentoResponseDTO findCalculoById(Long id) {
+
+        // Busca o cálculo por ID e comunidade
+        CalculoArmazenamento calculo = calculoArmazenamentoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cálculo não encontrado."));
+
+        // Mapeia para DTO
+        CalculoArmazenamentoResponseDTO dto = modelMapper.map(calculo, CalculoArmazenamentoResponseDTO.class);
+        dto.setComunidade(calculo.getComunidade().getNome());
+        dto.setTipoPlacaSolar(calculo.getTipoPlacaSolar().getNome());
+        return dto;
     }
 }

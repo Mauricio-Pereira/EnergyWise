@@ -10,6 +10,9 @@ import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,9 +70,13 @@ public class TipoPlacaSolarService {
     }
 
 
-    public List<TipoPlacaSolar> findAllPlacasSolares() {
-        List<TipoPlacaSolar> tipoPlacaSolares = tipoPlacaSolarRepository.findAll(
-                Sort.by(Sort.Direction.ASC, "id"));
+    public Page<TipoPlacaSolar> findAllPlacasSolares(int page, int size) {
+
+        Pageable pageable = PageRequest.of(page-1, size, Sort.by("id").ascending());
+
+        Page<TipoPlacaSolar> tipoPlacaSolares = tipoPlacaSolarRepository.findAll(
+                pageable);
+
         if (tipoPlacaSolares.isEmpty()) {
             new ResourceNotFoundException("Nenhum tipo de placa solar encontrado");
         }

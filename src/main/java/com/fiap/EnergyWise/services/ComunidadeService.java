@@ -12,6 +12,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -90,8 +91,9 @@ public class ComunidadeService {
         }
     }
 
-    public Page<ComunidadeResponseDTO> findAllComunidades(Pageable pageable) {
+    public Page<ComunidadeResponseDTO> findAllComunidades(int page, int size) {
 
+        Pageable pageable = PageRequest.of(page-1, size, Sort.by("id").ascending());
         Page<Comunidade> comunidadesPage = comunidadeRepository.findAll(pageable);
 
         if (comunidadesPage.isEmpty()) {

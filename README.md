@@ -5,7 +5,9 @@
 O **EnergyWise** é um sistema desenvolvido para gerenciar o consumo de energia solar em comunidades e condomínios. O principal objetivo é auxiliar na transição para fontes de energia renováveis, permitindo que comunidades monitorem seu consumo energético e calculem a quantidade necessária de placas solares para atender às suas necessidades.  
 
 O cálculo da quantidade de placas solares é feito com base no consumo médio da comunidade e no tipo de placa solar selecionado, considerando a potência, o preço unitário e uma margem de segurança de 20 por cento para garantir a eficiência do sistema.
-O sistema também permite o cadastro de diferentes tipos de placas solares, para que os usuários possam comparar e escolher a melhor opção para suas necessidades.
+O sistema também permite o cadastro de diferentes tipos de placas solares, para que os usuários possam comparar e escolher a melhor opção para suas necessidades.  
+
+O principal ponto é que as placas solares tem tamanhos físicos semelhantes, mas com potências diferentes, e o sistema calcula a quantidade necessária de placas com base na potência e no consumo médio da comunidade. Placas solares com maior potência geram mais energia, mas também são mais caras, então o sistema ajuda a encontrar o equilíbrio ideal entre custo e benefício. 
 
 ### Funcionalidades Principais
 

@@ -9,6 +9,7 @@ O sistema também permite o cadastro de diferentes tipos de placas solares, para
 
 O principal ponto é que as placas solares tem tamanhos físicos semelhantes, mas com potências diferentes, e o sistema calcula a quantidade necessária de placas com base na potência e no consumo médio da comunidade. Placas solares com maior potência geram mais energia, mas também são mais caras, então o sistema ajuda a encontrar o equilíbrio ideal entre custo e benefício. 
 
+Um documento PDF com uma descrição detalhada da solução pode ser encontrado [aqui](doc/energywise.pdf).
 ### Funcionalidades Principais
 
 - **Gerenciamento de Comunidades**: Cadastro, consulta, atualização e exclusão de comunidades.

@@ -1,15 +1,15 @@
+FROM gradle:8.5-jdk21 AS build
 
-# Etapa 1: Construção da aplicação
-FROM gradle:jdk21 AS builder
-LABEL authors="Mauricio.Pereira"
+WORKDIR /home/gradle/src
+COPY --chown=gradle:gradle . .
+
+RUN gradle build --no-daemon
+
+FROM openjdk:21-slim
+
 WORKDIR /app
-COPY . .
-RUN gradle build --no-daemon -x test
 
-
-# Etapa 2: Preparação da imagem final
-FROM openjdk:21-jdk-slim AS runtime
-WORKDIR /app
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=build /home/gradle/src/build/libs/EnergyWise-0.0.1-SNAPSHOT.jar /app/app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

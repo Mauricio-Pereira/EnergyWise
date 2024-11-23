@@ -87,6 +87,8 @@ O sistema foi desenvolvido utilizando o framework **Spring Boot**, seguindo a ar
 
 A aplicação estará disponível em `http://localhost:8080`.
 
+- **URL Base:** `http://191.234.176.144:8080`
+
 ## Documentação da API
 
 A documentação interativa da API está disponível via Swagger UI.
